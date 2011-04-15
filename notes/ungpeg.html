@@ -1,0 +1,1430 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="AsciiDoc 8.5.1" />
+<title>Ungpeg Parsing Expression Grammars</title>
+<style type="text/css">
+/* Debug borders */
+p, li, dt, dd, div, pre, h1, h2, h3, h4, h5, h6 {
+/*
+  border: 1px solid red;
+*/
+}
+
+body {
+  margin: 1em 5% 1em 5%;
+}
+
+a {
+  color: blue;
+  text-decoration: underline;
+}
+a:visited {
+  color: fuchsia;
+}
+
+em {
+  font-style: italic;
+  color: navy;
+}
+
+strong {
+  font-weight: bold;
+  color: #083194;
+}
+
+tt {
+  color: navy;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #527bbd;
+  font-family: sans-serif;
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+}
+
+h1, h2, h3 {
+  border-bottom: 2px solid silver;
+}
+h2 {
+  padding-top: 0.5em;
+}
+h3 {
+  float: left;
+}
+h3 + * {
+  clear: left;
+}
+
+div.sectionbody {
+  font-family: serif;
+  margin-left: 0;
+}
+
+hr {
+  border: 1px solid silver;
+}
+
+p {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+ul, ol, li > p {
+  margin-top: 0;
+}
+
+pre {
+  padding: 0;
+  margin: 0;
+}
+
+span#author {
+  color: #527bbd;
+  font-family: sans-serif;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+span#email {
+}
+span#revnumber, span#revdate, span#revremark {
+  font-family: sans-serif;
+}
+
+div#footer {
+  font-family: sans-serif;
+  font-size: small;
+  border-top: 2px solid silver;
+  padding-top: 0.5em;
+  margin-top: 4.0em;
+}
+div#footer-text {
+  float: left;
+  padding-bottom: 0.5em;
+}
+div#footer-badges {
+  float: right;
+  padding-bottom: 0.5em;
+}
+
+div#preamble {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+div.tableblock, div.imageblock, div.exampleblock, div.verseblock,
+div.quoteblock, div.literalblock, div.listingblock, div.sidebarblock,
+div.admonitionblock {
+  margin-top: 0.25em;
+  margin-bottom: 1.5em;
+}
+div.admonitionblock {
+  margin-top: 2.5em;
+  margin-bottom: 2.5em;
+}
+
+div.content { /* Block element content. */
+  padding: 0;
+}
+
+/* Block element titles. */
+div.title, caption.title {
+  color: #527bbd;
+  font-family: sans-serif;
+  font-weight: bold;
+  text-align: left;
+  margin-top: 1.0em;
+  margin-bottom: 0.5em;
+}
+div.title + * {
+  margin-top: 0;
+}
+
+td div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content + div.title {
+  margin-top: 0.0em;
+}
+
+div.sidebarblock > div.content {
+  background: #ffffee;
+  border: 1px solid silver;
+  padding: 0.5em;
+}
+
+div.listingblock > div.content {
+  border: 1px solid silver;
+  background: #f4f4f4;
+  padding: 0.5em;
+}
+
+div.quoteblock {
+  padding-left: 2.0em;
+  margin-right: 10%;
+}
+div.quoteblock > div.attribution {
+  padding-top: 0.5em;
+  text-align: right;
+}
+
+div.verseblock {
+  padding-left: 2.0em;
+  margin-right: 10%;
+}
+div.verseblock > div.content {
+  white-space: pre;
+}
+div.verseblock > div.attribution {
+  padding-top: 0.75em;
+  text-align: left;
+}
+/* DEPRECATED: Pre version 8.2.7 verse style literal block. */
+div.verseblock + div.attribution {
+  text-align: left;
+}
+
+div.admonitionblock .icon {
+  vertical-align: top;
+  font-size: 1.1em;
+  font-weight: bold;
+  text-decoration: underline;
+  color: #527bbd;
+  padding-right: 0.5em;
+}
+div.admonitionblock td.content {
+  padding-left: 0.5em;
+  border-left: 2px solid silver;
+}
+
+div.exampleblock > div.content {
+  border-left: 2px solid silver;
+  padding: 0.5em;
+}
+
+div.imageblock div.content { padding-left: 0; }
+span.image img { border-style: none; }
+a.image:visited { color: white; }
+
+dl {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+dt {
+  margin-top: 0.5em;
+  margin-bottom: 0;
+  font-style: normal;
+  color: navy;
+}
+dd > *:first-child {
+  margin-top: 0.1em;
+}
+
+ul, ol {
+    list-style-position: outside;
+}
+ol.arabic {
+  list-style-type: decimal;
+}
+ol.loweralpha {
+  list-style-type: lower-alpha;
+}
+ol.upperalpha {
+  list-style-type: upper-alpha;
+}
+ol.lowerroman {
+  list-style-type: lower-roman;
+}
+ol.upperroman {
+  list-style-type: upper-roman;
+}
+
+div.compact ul, div.compact ol,
+div.compact p, div.compact p,
+div.compact div, div.compact div {
+  margin-top: 0.1em;
+  margin-bottom: 0.1em;
+}
+
+div.tableblock > table {
+  border: 3px solid #527bbd;
+}
+thead {
+  font-family: sans-serif;
+  font-weight: bold;
+}
+tfoot {
+  font-weight: bold;
+}
+td > div.verse {
+  white-space: pre;
+}
+p.table {
+  margin-top: 0;
+}
+/* Because the table frame attribute is overriden by CSS in most browsers. */
+div.tableblock > table[frame="void"] {
+  border-style: none;
+}
+div.tableblock > table[frame="hsides"] {
+  border-left-style: none;
+  border-right-style: none;
+}
+div.tableblock > table[frame="vsides"] {
+  border-top-style: none;
+  border-bottom-style: none;
+}
+
+
+div.hdlist {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+div.hdlist tr {
+  padding-bottom: 15px;
+}
+dt.hdlist1.strong, td.hdlist1.strong {
+  font-weight: bold;
+}
+td.hdlist1 {
+  vertical-align: top;
+  font-style: normal;
+  padding-right: 0.8em;
+  color: navy;
+}
+td.hdlist2 {
+  vertical-align: top;
+}
+div.hdlist.compact tr {
+  margin: 0;
+  padding-bottom: 0;
+}
+
+.comment {
+  background: yellow;
+}
+
+.footnote, .footnoteref {
+  font-size: 0.8em;
+}
+
+span.footnote, span.footnoteref {
+  vertical-align: super;
+}
+
+#footnotes {
+  margin: 20px 0 20px 0;
+  padding: 7px 0 0 0;
+}
+
+#footnotes div.footnote {
+  margin: 0 0 5px 0;
+}
+
+#footnotes hr {
+  border: none;
+  border-top: 1px solid silver;
+  height: 1px;
+  text-align: left;
+  margin-left: 0;
+  width: 20%;
+  min-width: 100px;
+}
+
+
+@media print {
+  div#footer-badges { display: none; }
+}
+
+div#toctitle {
+  color: #527bbd;
+  font-family: sans-serif;
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-top: 1.0em;
+  margin-bottom: 0.1em;
+}
+
+div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+div.toclevel2 {
+  margin-left: 2em;
+  font-size: 0.9em;
+}
+div.toclevel3 {
+  margin-left: 4em;
+  font-size: 0.9em;
+}
+div.toclevel4 {
+  margin-left: 6em;
+  font-size: 0.9em;
+}
+/* Workarounds for IE6's broken and incomplete CSS2. */
+
+div.sidebar-content {
+  background: #ffffee;
+  border: 1px solid silver;
+  padding: 0.5em;
+}
+div.sidebar-title, div.image-title {
+  color: #527bbd;
+  font-family: sans-serif;
+  font-weight: bold;
+  margin-top: 0.0em;
+  margin-bottom: 0.5em;
+}
+
+div.listingblock div.content {
+  border: 1px solid silver;
+  background: #f4f4f4;
+  padding: 0.5em;
+}
+
+div.quoteblock-attribution {
+  padding-top: 0.5em;
+  text-align: right;
+}
+
+div.verseblock-content {
+  white-space: pre;
+}
+div.verseblock-attribution {
+  padding-top: 0.75em;
+  text-align: left;
+}
+
+div.exampleblock-content {
+  border-left: 2px solid silver;
+  padding-left: 0.5em;
+}
+
+/* IE6 sets dynamically generated links as visited. */
+div#toc a:visited { color: blue; }
+</style>
+<script type="text/javascript">
+/*<![CDATA[*/
+window.onload = function(){asciidoc.footnotes(); asciidoc.toc(2);}
+var asciidoc = {  // Namespace.
+
+/////////////////////////////////////////////////////////////////////
+// Table Of Contents generator
+/////////////////////////////////////////////////////////////////////
+
+/* Author: Mihai Bazon, September 2002
+ * http://students.infoiasi.ro/~mishoo
+ *
+ * Table Of Content generator
+ * Version: 0.4
+ *
+ * Feel free to use this script under the terms of the GNU General Public
+ * License, as long as you do not remove or alter this notice.
+ */
+
+ /* modified by Troy D. Hanson, September 2006. License: GPL */
+ /* modified by Stuart Rackham, 2006, 2009. License: GPL */
+
+// toclevels = 1..4.
+toc: function (toclevels) {
+
+  function getText(el) {
+    var text = "";
+    for (var i = el.firstChild; i != null; i = i.nextSibling) {
+      if (i.nodeType == 3 /* Node.TEXT_NODE */) // IE doesn't speak constants.
+        text += i.data;
+      else if (i.firstChild != null)
+        text += getText(i);
+    }
+    return text;
+  }
+
+  function TocEntry(el, text, toclevel) {
+    this.element = el;
+    this.text = text;
+    this.toclevel = toclevel;
+  }
+
+  function tocEntries(el, toclevels) {
+    var result = new Array;
+    var re = new RegExp('[hH]([2-'+(toclevels+1)+'])');
+    // Function that scans the DOM tree for header elements (the DOM2
+    // nodeIterator API would be a better technique but not supported by all
+    // browsers).
+    var iterate = function (el) {
+      for (var i = el.firstChild; i != null; i = i.nextSibling) {
+        if (i.nodeType == 1 /* Node.ELEMENT_NODE */) {
+          var mo = re.exec(i.tagName);
+          if (mo)
+            result[result.length] = new TocEntry(i, getText(i), mo[1]-1);
+          iterate(i);
+        }
+      }
+    }
+    iterate(el);
+    return result;
+  }
+
+  var toc = document.getElementById("toc");
+  var entries = tocEntries(document.getElementById("content"), toclevels);
+  for (var i = 0; i < entries.length; ++i) {
+    var entry = entries[i];
+    if (entry.element.id == "")
+      entry.element.id = "_toc_" + i;
+    var a = document.createElement("a");
+    a.href = "#" + entry.element.id;
+    a.appendChild(document.createTextNode(entry.text));
+    var div = document.createElement("div");
+    div.appendChild(a);
+    div.className = "toclevel" + entry.toclevel;
+    toc.appendChild(div);
+  }
+  if (entries.length == 0)
+    toc.parentNode.removeChild(toc);
+},
+
+
+/////////////////////////////////////////////////////////////////////
+// Footnotes generator
+/////////////////////////////////////////////////////////////////////
+
+/* Based on footnote generation code from:
+ * http://www.brandspankingnew.net/archive/2005/07/format_footnote.html
+ */
+
+footnotes: function () {
+  var cont = document.getElementById("content");
+  var noteholder = document.getElementById("footnotes");
+  var spans = cont.getElementsByTagName("span");
+  var refs = {};
+  var n = 0;
+  for (i=0; i<spans.length; i++) {
+    if (spans[i].className == "footnote") {
+      n++;
+      // Use [\s\S] in place of . so multi-line matches work.
+      // Because JavaScript has no s (dotall) regex flag.
+      note = spans[i].innerHTML.match(/\s*\[([\s\S]*)]\s*/)[1];
+      noteholder.innerHTML +=
+        "<div class='footnote' id='_footnote_" + n + "'>" +
+        "<a href='#_footnoteref_" + n + "' title='Return to text'>" +
+        n + "</a>. " + note + "</div>";
+      spans[i].innerHTML =
+        "[<a id='_footnoteref_" + n + "' href='#_footnote_" + n +
+        "' title='View footnote' class='footnote'>" + n + "</a>]";
+      var id =spans[i].getAttribute("id");
+      if (id != null) refs["#"+id] = n;
+    }
+  }
+  if (n == 0)
+    noteholder.parentNode.removeChild(noteholder);
+  else {
+    // Process footnoterefs.
+    for (i=0; i<spans.length; i++) {
+      if (spans[i].className == "footnoteref") {
+        var href = spans[i].getElementsByTagName("a")[0].getAttribute("href");
+        href = href.match(/#.*/)[0];  // Because IE return full URL.
+        n = refs[href];
+        spans[i].innerHTML =
+          "[<a href='#_footnote_" + n +
+          "' title='View footnote' class='footnote'>" + n + "</a>]";
+      }
+    }
+  }
+}
+
+}
+/*]]>*/
+</script>
+</head>
+<body>
+<div id="header">
+<h1>Ungpeg Parsing Expression Grammars</h1>
+<span id="author">Joseph Wecker</span><br />
+<span id="email"><tt>&lt;<a href="mailto:joseph.wecker@gmail.com">joseph.wecker@gmail.com</a>&gt;</tt></span><br />
+</div>
+<div id="content">
+<h2 id="_left_recursion">Left Recursion</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Every left-recursive sequence after inlining makes the following
+transformation:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><tt>a &lt;- a rest1 / a rest2 / s1 / s2 / a rest3
+a &lt;= (s1 / s2) a2
+a2&lt;= (rest1 / rest2 / rest3) a / succ</tt></pre>
+</div></div>
+<div class="paragraph"><p>s1 and s2 are assigned all tag that are already assigned to rest1, rest2, and
+rest3 - so that they collapse properly when one of the rest* expressions is
+invoked.</p></div>
+</div>
+<h2 id="_definitions">Definitions</h2>
+<div class="sectionbody">
+<div class="sidebarblock">
+<div class="sidebar-content">
+<div class="sidebar-title">Expressions</div>
+<div class="dlist"><dl>
+<dt class="hdlist1">
+call
+</dt>
+<dd>
+<p>
+<tt>some_rule</tt> - A reference to another rule to be invoked.
+</p>
+</dd>
+<dt class="hdlist1">
+seq
+</dt>
+<dd>
+<p>
+<tt>a b c</tt> - Sequence. A space delimited list of sub-expressions, invoked
+sequentially, that fails if any of the sub-expressions fail.
+</p>
+</dd>
+<dt class="hdlist1">
+ord
+</dt>
+<dd>
+<p>
+<tt>a/b/c</tt> - Ordered choice. A forward-slash delimited sequence of
+sub-expressions that are evaluated only until one succeeds. A prioritized
+choice sequence.
+</p>
+</dd>
+<dt class="hdlist1">
+xord
+</dt>
+<dd>
+<p>
+<tt>a//b//c</tt> - Exclusive ordered choice. A specialized <tt>ord</tt> where the
+first sub-expression to begin to succeed determines the overall result of the
+expression. Intended to be used only internally by the system.
+</p>
+</dd>
+<dt class="hdlist1">
+char
+</dt>
+<dd>
+<p>
+<tt>[a-z_]</tt> - Character class, matches one/any of the ranges/singles.
+</p>
+</dd>
+<dt class="hdlist1">
+lit
+</dt>
+<dd>
+<p>
+<tt>'abc'</tt> - Sequence of characters to consume.
+</p>
+</dd>
+</dl></div>
+</div></div>
+<div class="sidebarblock">
+<div class="sidebar-content">
+<div class="sidebar-title">Special Expressions</div>
+<div class="dlist"><dl>
+<dt class="hdlist1">
+succ
+</dt>
+<dd>
+<p>
+<tt>succ</tt> - (Special) Always succeeds consuming nothing- also known as the empty
+string.
+</p>
+</dd>
+<dt class="hdlist1">
+fail
+</dt>
+<dd>
+<p>
+<tt>fail</tt> - (Special) Always fails, consuming nothing.
+</p>
+</dd>
+<dt class="hdlist1">
+any
+</dt>
+<dd>
+<p>
+<tt>. or any</tt> - (Special) Matches and consumes the next available input.
+</p>
+</dd>
+<dt class="hdlist1">
+eof
+</dt>
+<dd>
+<p>
+<tt>!. or eof</tt> - (Special) Matches the end of all input.
+</p>
+</dd>
+</dl></div>
+</div></div>
+<div class="sidebarblock">
+<div class="sidebar-content">
+<div class="sidebar-title">Misc Expressions</div>
+<div class="dlist"><dl>
+<dt class="hdlist1">
+e
+</dt>
+<dd>
+<p>
+Shorthand for expression.
+</p>
+</dd>
+<dt class="hdlist1">
+term
+</dt>
+<dd>
+<p>
+Shorthand for sub-expressions (equivalent to <tt>e</tt> in reality).
+</p>
+</dd>
+<dt class="hdlist1">
+nop
+</dt>
+<dd>
+<p>
+Shorthand for an expression or sub-expression that can be safely removed.
+</p>
+</dd>
+<dt class="hdlist1">
+body
+</dt>
+<dd>
+<p>
+The "main" or toplevel <tt>term</tt> for a rule.
+</p>
+</dd>
+<dt class="hdlist1">
+t()
+</dt>
+<dd>
+<p>
+Transformation function that user supplies to process partial results
+</p>
+</dd>
+<dt class="hdlist1">
+c()
+</dt>
+<dd>
+<p>
+Collapse function - internally generated expression that takes everything
+off the current accumulator and assigns it into specified tag buckets.
+</p>
+</dd>
+</dl></div>
+</div></div>
+<div class="sidebarblock">
+<div class="sidebar-content">
+<div class="sidebar-title">Attributes</div>
+<div class="dlist"><dl>
+<dt class="hdlist1">
+Prefixes / Predicates
+</dt>
+<dd>
+<div class="dlist"><dl>
+<dt class="hdlist1">
+notp
+</dt>
+<dd>
+<p>
+<tt>!e1</tt> - Not predicate, fails if e1 succeeds, consumes nothing
+</p>
+</dd>
+<dt class="hdlist1">
+andp
+</dt>
+<dd>
+<p>
+<tt>&amp;e1</tt> - And predicate, succeeds if e1 succeeds, consumes nothing
+</p>
+</dd>
+</dl></div>
+</dd>
+<dt class="hdlist1">
+Suffixes / Quantifiers
+</dt>
+<dd>
+<div class="dlist"><dl>
+<dt class="hdlist1">
+star
+</dt>
+<dd>
+<p>
+<tt>e1*</tt> - Kleene star, greedily consumes zero or more of <tt>e1</tt>, always
+  succeeds
+</p>
+</dd>
+<dt class="hdlist1">
+plus
+</dt>
+<dd>
+<p>
+<tt>e1+</tt> - Greedily consumes 1 or more of <tt>e1</tt>, failing if there are
+  none.
+</p>
+</dd>
+<dt class="hdlist1">
+opt
+</dt>
+<dd>
+<p>
+<tt>e1?</tt> - Consumes zero or 1 of <tt>e1</tt>, always succeeds.
+</p>
+</dd>
+</dl></div>
+</dd>
+</dl></div>
+</div></div>
+</div>
+<h2 id="_peg_first_normal_form">PEG First Normal Form</h2>
+<div class="sectionbody">
+<h3 id="_applicable_to_all_all">Applicable to all (all)</h3><div style="clear:left"></div>
+<div class="olist arabic"><ol class="arabic">
+<li>
+<p>
+Every <tt>call</tt> inlined except entry-points, recursive calls, and accumulators.
+</p>
+</li>
+<li>
+<p>
+Attributes on all expressions are normalized / reduced (see below)
+</p>
+</li>
+<li>
+<p>
+All <tt>+</tt> expressions normalized to <tt>*</tt> expressions. (only after attributes
+  fully normalized).
+</p>
+</li>
+<li>
+<p>
+No potential degenerate loops - or warnings emitted if applicable.
+</p>
+</li>
+</ol></div>
+<h3 id="_ordered_choice_ord">Ordered Choice (ord)</h3><div style="clear:left"></div>
+<div class="olist arabic"><ol class="arabic">
+<li>
+<p>
+Contains no <tt>ord</tt> terms. (TODO: invalidated by certain <tt>term</tt> attributes).
+</p>
+</li>
+<li>
+<p>
+Contains no <tt>succ</tt> terms. (Everything after removed and <tt>ord</tt> rewritten to
+  <tt>ord?</tt>).
+</p>
+</li>
+<li>
+<p>
+Contains nothing after a <tt>star</tt> term (which always succeeds).
+</p>
+</li>
+<li>
+<p>
+Contains no <tt>opt</tt> terms. (Rewritten as <tt>term/succ</tt> and reduced as per #2).
+</p>
+</li>
+<li>
+<p>
+Contains no <tt>fail</tt> terms. (Safely removed as nops).
+</p>
+</li>
+<li>
+<p>
+Contains at least two <tt>terms</tt>. (Single <tt>term</tt> replaces <tt>nop</tt> <tt>ord</tt>, with
+  attributes combined).
+</p>
+</li>
+<li>
+<p>
+Contains no duplicate or equivalent <tt>terms</tt>. (Leftmost is kept).
+</p>
+</li>
+<li>
+<p>
+Contains no <tt>term2</tt> to the right of <tt>term1</tt> that have <tt>term1</tt> as a prefix.
+</p>
+</li>
+<li>
+<p>
+All inner <tt>terms</tt> are in reduced form.
+</p>
+</li>
+</ol></div>
+<h3 id="_sequences_seq">Sequences (seq)</h3><div style="clear:left"></div>
+<div class="olist arabic"><ol class="arabic">
+<li>
+<p>
+Contains no <tt>seq</tt> term except where attributes differentiate. (TODO).
+</p>
+</li>
+<li>
+<p>
+Contains no <tt>succ</tt> terms. (Removed because they are nops).
+</p>
+</li>
+<li>
+<p>
+Contains no <tt>fail</tt> terms. (A seq with a fail term is itself a fail term).
+</p>
+</li>
+<li>
+<p>
+Contains at least two <tt>terms</tt>. (Single <tt>term</tt> replaces <tt>nop</tt> <tt>seq</tt>, with
+  attributes combined).
+</p>
+</li>
+<li>
+<p>
+Contains no two identical <tt>star</tt> terms in a row (safely remove second)
+</p>
+</li>
+<li>
+<p>
+All inner <tt>terms</tt> are in reduced form.
+</p>
+</li>
+</ol></div>
+<h3 id="_attributes_attr">Attributes (attr)</h3><div style="clear:left"></div>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<img src="./images/icons/note.png" alt="Note" />
+</td>
+<td class="content">One should recursively apply the rule  combinations from innermost to
+outermost, stopping when all are processed or when an error is encountered.</td>
+</tr></table>
+</div>
+<div class="olist arabic"><ol class="arabic">
+<li>
+<p>
+<tt>opt</tt> Group
+</p>
+<div class="olist loweralpha"><ol class="loweralpha">
+<li>
+<p>
+<tt>(e1?)?</tt> &#8658; <tt>e1?</tt>
+</p>
+</li>
+<li>
+<p>
+<tt>(e1?)*</tt> &#8658; <span style="color:red;">Error</span>: Degenerate loop at first char where <tt>e1</tt> fails (intended?: e1*)
+</p>
+</li>
+<li>
+<p>
+<tt>(e1*)?</tt> &#8658; <tt>e1*</tt>
+</p>
+</li>
+<li>
+<p>
+<tt>(e1?)+</tt> &#8658; <span style="color:red;">Error</span>: Degenerate loop at first char where <tt>e1</tt> fails (intended?: e1+)
+</p>
+</li>
+<li>
+<p>
+<tt>(e1+)?</tt> &#8658; <tt>e1*</tt>
+</p>
+</li>
+<li>
+<p>
+<tt>&amp;(e1?)</tt> &#8658; <tt>succ</tt>
+</p>
+</li>
+<li>
+<p>
+<tt>(&amp;e1)?</tt> &#8658; <tt>succ</tt>
+</p>
+</li>
+<li>
+<p>
+<tt>!(e1?)</tt> &#8658; <tt>fail</tt>
+</p>
+</li>
+<li>
+<p>
+<tt>(!e1)?</tt> &#8658; <tt>succ</tt>
+</p>
+</li>
+<li>
+<p>
+<tt>any?</tt>   &#8658; Valid, no change
+</p>
+</li>
+<li>
+<p>
+<tt>eof?</tt>   &#8658; <tt>succ</tt>
+</p>
+</li>
+<li>
+<p>
+<tt>succ?</tt>  &#8658; <tt>succ</tt>
+</p>
+</li>
+<li>
+<p>
+<tt>fail?</tt>  &#8658; <tt>succ</tt>
+</p>
+</li>
+</ol></div>
+</li>
+<li>
+<p>
+<tt>star</tt> Group
+</p>
+<div class="olist loweralpha"><ol class="loweralpha">
+<li>
+<p>
+<tt>(e1*)*</tt> &#8658; <span style="color:red;">Error</span>: Degenerate loop
+</p>
+</li>
+<li>
+<p>
+<tt>(e1*)+</tt> &#8658; <tt>fail</tt> (<tt>e1*</tt> never leaves anything for <tt>+</tt> to consume)
+</p>
+</li>
+<li>
+<p>
+<tt>(e1+)*</tt> &#8658; <tt>e1*</tt>
+</p>
+</li>
+<li>
+<p>
+<tt>&amp;(e1*)</tt> &#8658; <tt>succ</tt>
+</p>
+</li>
+<li>
+<p>
+<tt>(&amp;e1)*</tt> &#8658; <span style="color:red;">Error</span>: Degenerate loop
+</p>
+</li>
+<li>
+<p>
+<tt>!(e1*)</tt> &#8658; <tt>fail</tt>
+</p>
+</li>
+<li>
+<p>
+<tt>(!e1)*</tt> &#8658; <span style="color:red;">Error</span>: Degenerate loop when <tt>e1</tt> fails
+</p>
+</li>
+<li>
+<p>
+<tt>any*</tt>   &#8658; Valid, no change
+</p>
+</li>
+<li>
+<p>
+<tt>eof*</tt>   &#8658; <span style="color:red;">Error</span>: Degenerate loop (<tt>(!any)*</tt>)
+</p>
+</li>
+<li>
+<p>
+<tt>succ*</tt>  &#8658; <span style="color:red;">Error</span>: Degenerate loop
+</p>
+</li>
+<li>
+<p>
+<tt>fail*</tt>  &#8658; <tt>fail</tt>
+</p>
+</li>
+</ol></div>
+</li>
+<li>
+<p>
+<tt>plus</tt> Group
+</p>
+<div class="olist loweralpha"><ol class="loweralpha">
+<li>
+<p>
+<tt>(e1+)+</tt> &#8658; <tt>fail</tt> (never anything for the second to consume)
+</p>
+</li>
+<li>
+<p>
+<tt>&amp;(e1+)</tt> &#8658; Valid, no change
+</p>
+</li>
+<li>
+<p>
+<tt>(&amp;e1)+</tt> &#8658; <span style="color:red;">Error</span>: Degenerate loop when <tt>e1</tt> succeeds
+</p>
+</li>
+<li>
+<p>
+<tt>!(e1+)</tt> &#8658; Valid, no change
+</p>
+</li>
+<li>
+<p>
+<tt>(!e1)+</tt> &#8658; <span style="color:red;">Error</span>: Degenerate loop when <tt>e1</tt> fails
+</p>
+</li>
+<li>
+<p>
+<tt>any+</tt>   &#8658; Valid, no change
+</p>
+</li>
+<li>
+<p>
+<tt>eof+</tt>   &#8658; <span style="color:red;">Error</span>: Degenerate loop
+</p>
+</li>
+<li>
+<p>
+<tt>succ+</tt>  &#8658; <span style="color:red;">Error</span>: Degenerate loop
+</p>
+</li>
+<li>
+<p>
+<tt>fail+</tt>  &#8658; <tt>fail</tt>
+</p>
+</li>
+</ol></div>
+</li>
+<li>
+<p>
+<tt>andp</tt> Group
+</p>
+<div class="olist loweralpha"><ol class="loweralpha">
+<li>
+<p>
+<tt>&amp;(&amp;e1)</tt> &#8658; <tt>&amp;e1</tt>
+</p>
+</li>
+<li>
+<p>
+<tt>!(&amp;e1)</tt> &#8658; <tt>!e1</tt>
+</p>
+</li>
+<li>
+<p>
+<tt>&amp;(!e1)</tt> &#8658; <tt>!e1</tt>
+</p>
+</li>
+<li>
+<p>
+<tt>&amp;any</tt>   &#8658; Valid, no change
+</p>
+</li>
+<li>
+<p>
+<tt>&amp;eof</tt>   &#8658; Valid, no change
+</p>
+</li>
+<li>
+<p>
+<tt>&amp;succ</tt>  &#8658; <tt>succ</tt>
+</p>
+</li>
+<li>
+<p>
+<tt>&amp;fail</tt>  &#8658; <tt>fail</tt>
+</p>
+</li>
+</ol></div>
+</li>
+<li>
+<p>
+<tt>notp</tt> Group
+</p>
+<div class="olist loweralpha"><ol class="loweralpha">
+<li>
+<p>
+<tt>!(!e1)</tt> &#8658; <tt>&amp;e1</tt>
+</p>
+</li>
+<li>
+<p>
+<tt>!any</tt>   &#8658; <tt>eof</tt>
+</p>
+</li>
+<li>
+<p>
+<tt>!eof</tt>   &#8658; <tt>any</tt>
+</p>
+</li>
+<li>
+<p>
+<tt>!succ</tt>  &#8658; <tt>fail</tt>
+</p>
+</li>
+<li>
+<p>
+<tt>!fail</tt>  &#8658; <tt>succ</tt>
+</p>
+</li>
+</ol></div>
+</li>
+</ol></div>
+<h3 id="_detecting_degenerate_loops">Detecting Degenerate Loops</h3><div style="clear:left"></div>
+<h4 id="_expression_classification">Expression Classification</h4>
+<div class="sidebarblock">
+<div class="sidebar-content">
+<div class="sidebar-title">Definitions</div>
+<div class="dlist"><dl>
+<dt class="hdlist1">
+0
+</dt>
+<dd>
+<p>
+Success, nothing consumed
+</p>
+</dd>
+<dt class="hdlist1">
+1
+</dt>
+<dd>
+<p>
+Success, something consumed
+</p>
+</dd>
+<dt class="hdlist1">
+f
+</dt>
+<dd>
+<p>
+Failure, nothing consumed
+</p>
+</dd>
+<dt class="hdlist1">
+s
+</dt>
+<dd>
+<p>
+0 or 1 (success, sometimes something consumed)
+</p>
+</dd>
+<dt class="hdlist1">
+a
+</dt>
+<dd>
+<p>
+s or f (any of the above)
+</p>
+</dd>
+</dl></div>
+</div></div>
+<div class="olist arabic"><ol class="arabic">
+<li>
+<p>
+<tt>succ</tt>    &#8594; 0
+</p>
+</li>
+<li>
+<p>
+<tt>any/char/lit</tt> &#8594; 1 | f
+</p>
+</li>
+<li>
+<p>
+<tt>call</tt>    &#8594; (whatever its expression reduces to)
+</p>
+</li>
+<li>
+<p>
+<tt>e1 e2</tt>   &#8594; 0 if <tt>e1</tt>&#8594;0 and <tt>e2</tt>&#8594;0
+</p>
+</li>
+<li>
+<p>
+<tt>e1 e2</tt>   &#8594; 1 if <tt>e1</tt>&#8594;1 and <tt>e2</tt>&#8594;s (or visa versa)
+</p>
+</li>
+<li>
+<p>
+<tt>e1 e2</tt>   &#8594; f if <tt>e1</tt>&#8594;f or (<tt>e1</tt>&#8594;s and <tt>e2</tt>&#8594;f)
+</p>
+</li>
+<li>
+<p>
+<tt>e1/e2</tt>   &#8594; s if <tt>e1</tt>&#8594;s
+</p>
+</li>
+<li>
+<p>
+<tt>e1/e2</tt>   &#8594; a if <tt>e1</tt>&#8594;f and <tt>e2</tt>&#8594;a
+</p>
+</li>
+<li>
+<p>
+<tt>e*</tt>      &#8594; 1 if <tt>e</tt> &#8594;1
+</p>
+</li>
+<li>
+<p>
+<tt>e*</tt>      &#8594; 0 if <tt>e</tt> &#8594;f
+</p>
+</li>
+<li>
+<p>
+<tt>!e</tt>      &#8594; f if <tt>e</tt> &#8594;s
+</p>
+</li>
+<li>
+<p>
+<tt>!e</tt>      &#8594; 0 if <tt>e</tt> &#8594;f
+</p>
+</li>
+<li>
+<p>
+<tt>e1/e2*</tt>  &#8594; s
+</p>
+</li>
+<li>
+<p>
+<tt>e1/e2?</tt>  &#8594; s
+</p>
+</li>
+<li>
+<p>
+<tt>e1/succ</tt> &#8594; s
+</p>
+</li>
+</ol></div>
+<h4 id="_algorithm">Algorithm</h4>
+<div class="paragraph"><p>The primary objective is to detect any concrete possibility of <tt>e1</tt>&#8594;0 in
+<tt>e1*</tt>. The secondary objective, if possible, is to detect the possibility of a
+recursive rule recursing without consuming any input (after left-recursion
+rules are put into place).</p></div>
+</div>
+<h2 id="_peg_second_normal_form">PEG Second Normal Form</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>(In preparation for all transformations)</p></div>
+<div class="olist arabic"><ol class="arabic">
+<li>
+<p>
+No <tt>lit</tt> expressions - only sequences of (small) <tt>char</tt> ranges.
+</p>
+</li>
+<li>
+<p>
+Every <tt>char</tt> range with multiple ranges is instead an <tt>ord</tt> of each
+  range/char.
+</p>
+</li>
+<li>
+<p>
+<tt>star</tt> expressions pulled into their own tail-recursive rules.
+</p>
+</li>
+<li>
+<p>
+Only recursive rules (including what used to be <tt>star</tt> expressions) are not
+  inlined.
+</p>
+</li>
+</ol></div>
+</div>
+<h2 id="_peg_optimized_form">PEG Optimized Form</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>(All transformations have finished)</p></div>
+<div class="olist arabic"><ol class="arabic">
+<li>
+<p>
+(If possible) no <tt>ord</tt> expressions- only <tt>xord</tt> expressions in their place.
+</p>
+</li>
+<li>
+<p>
+All potentially left-recursive rules are marked for compiler generator.
+</p>
+</li>
+<li>
+<p>
+Sequences of <tt>char</tt> recombined into <tt>lit</tt> form where possible. (NOTE: the
+  transformation function may need to break it back up- but it&#8217;ll still make
+  matching faster&#8230;)
+</p>
+</li>
+<li>
+<p>
+Predicates reference new (optimized) paths - predicates do not reference
+  any rules referenced by any non-predicate rules.
+</p>
+</li>
+<li>
+<p>
+Predicates do not attempt to consume more of the input once success or
+  failure is certain.
+</p>
+</li>
+</ol></div>
+</div>
+<h2 id="_xord_creation">XORD creation</h2>
+<div class="sectionbody">
+<div class="olist arabic"><ol class="arabic">
+<li>
+<p>
+<tt>R &lt;- ([x]//[y]) R / succ</tt> can be rewritten as <tt>R &lt;- ([x]//[y]) R // succ</tt> -
+  TODO: figure out how it is discoverable (in this case first term succeeds or
+  fails, and second one always succeeds, so only first one is determinant&#8230;)
+</p>
+</li>
+</ol></div>
+</div>
+<h2 id="_ast_attributes">AST Attributes</h2>
+<div class="sectionbody">
+<div class="ulist"><ul>
+<li>
+<p>
+notp, andp
+</p>
+</li>
+<li>
+<p>
+star, plus, opt
+</p>
+</li>
+<li>
+<p>
+token
+</p>
+</li>
+<li>
+<p>
+trans: transformation expression
+</p>
+</li>
+<li>
+<p>
+tag: name with qualifier
+</p>
+</li>
+<li>
+<p>
+orig: original rule name
+</p>
+</li>
+<li>
+<p>
+orig_tag: original (unqualified) tag
+</p>
+</li>
+<li>
+<p>
+entry: name (designated entry point)
+</p>
+</li>
+<li>
+<p>
+i: index within original peg (line and column)
+</p>
+</li>
+</ul></div>
+</div>
+</div>
+<div id="footnotes"><hr /></div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2011-01-27 09:24:19 PDT
+</div>
+</div>
+</body>
+</html>

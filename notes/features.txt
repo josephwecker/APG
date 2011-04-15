@@ -1,0 +1,147 @@
+Benefits it shares with PEGs/packrat-parsers
+ - Deterministic - one parse tree for a given language
+ - Linear time complexity
+ - Unification of lexical and syntactical processing
+ - Operations tuned to programming tasks
+ - Unlimited look-ahead
+ - Context-sensitive languages allowed
+
+Benefits shared with other extensions to PEGs/packrat-parsers
+ - Left recursion
+ - Tagging for synthesis
+ - Orthogonal synthesis (modules)
+ - "Inline" expression syntax (APEXP/PEGEXP)
+ - (Implementation specific: automatic unicode support)
+
+Drawbacks to AP/APGs
+ - Parser is no longer "intuitive"
+
+Benefits unique to AP/APGs
+ - Constant space complexity
+ - Sometimes sublinear time complexity (fail and succ shortcircuits)
+ - LALR comparible speed. (Or even faster?)
+ - Idealized error state feedback (easy meaningful error messages)
+ - More mathematically robust and well-defined
+ - In-Line / On-Line continuations and partial results
+ - Degenerate loop detection
+ - Converts any PEG into a well-formed variant
+ - APG/PEG rewriting grammar (formally defined)
+ - APG/PEG visualization & graph-theory interpretation
+ - Intelligent automatic AST construction
+ - Optimized 'strict' tokens
+ - Yield for accumulating partial results (possible because of lack of
+   backtracking)
+
+Future directions
+ - Binary matching
+ - Formalized Adaptability
+ - (Achtung- ability to attach it to inline text at any point)
+
+
+--------------------------
+ - Placeholders in AST (with minor warning) for when a rule has no reduction
+   (instead of failing outright- which makes building from top-down a pain in
+   the butt)
+ - Only memoize when it's truly necessary,
+ - Remove memoized entry at the earliest possible time.
+
+ - Multiple entry-points designated (e.g.-> module,form,expression,term)
+ - Allow appending to warning stack in parse-transform
+ - Allow error-transform clause that is given the error(s)
+ - pegexps (peg expressions - single line pegs sharing some syntax w/ regex's
+   for easily doing things like nested parens etc.)
+   # Specials: (,),.,%,/,\,*,+
+   # Str = p-/"(!"(\\\\/\\"/.))*"/- # String with escapes
+   # Par = p-/\((!\)(./%1))*\)/- # Matched parenthasese
+
+   - pegexps - finally a way to do !'blah' ...
+
+ - parameterized rules (like a preprocessor to abstract certain patterns- use
+   for example to have one string-matcher that is given single-quotes or
+   double-quotes.
+ 
+ - convention over configuration for parse and error transforms- simply looks
+   for a fun with the same name as the rule (and checks to see if it handles a
+   "fail" case as well)
+
+ - Semantic predicates in addition to transformations (allow it to return its
+   own error).
+ - Current generic state available in all transformations and semantic
+   predicates.
+
+ - BINARY MATCHING (ala erlang)
+
+ - Call any erlang function as long as it returns either a ɛ or ϝ statement
+   (and new state etc.) (those can, in turn, of course, call other rules as if
+   they were standard functions, which, combined with parameters, essentially
+   gives us unlimited adaptability)
+
+ - Parameterized rules with pattern-matching
+
+ - Focus on runtime creation facilities (which implies things like variable
+   interpolation within the rule definitions etc.) - and only secondarily on
+   'compiler' creation...
+
+ - Basic 'assert' as a semantic predicate using state / context etc. (with
+   ability to do good error message)
+
+ - Definitely need some plans for fault tolerance:
+   - Error recovery! Ad-hoc program can analyze the error message, position,
+     characters remaining, etc.- and decide it can CONTINUE - jumps back in
+     with all state and context (possibly modified) intact.
+
+ - PEG →pygments (→syntax.vim)
+
+ - Special return type that is an error / failure, but acts like a success
+   therefore allowing the parsing to continue.
+
+ - Idea: Probabilistic code rewriting on `xch`s - determine which choice is
+   checked first based on which one passes more often.
+
+
+ - {finish, AST, Rest}, {cont, State, AST}, {finish, AST}, {fail, Failures}
+
+
+ - Idea: Trusted-Mode: If set to true it can actually skip ahead when it knows
+   there is only one thing that could come next. Trusted in this case implies
+   that the input is expected to succeed, and that it is mostly a matter of
+   gathering the relevant information. In some grammars it would not do much
+   good, but in others it might- especially where it would be skipping lots of
+   tokens and sequences etc. Come to think of it, analysis of the result (what
+   is actually skipable) is a good analysis of what in the grammar does not
+   provide any real information, and can be considered a weakness of the
+   grammar.
+
+ - When there are a couple of upcoming groups that are a different range of
+   characters and we are not collecting the results, it might make sense to
+   look at every other input instead (or even larger chunks)- kind of like
+   higher-order-determinant allowing us to skip characters.
+
+ - In a C implementation, look at as many characters as possible
+   simultaneously. Also look into cache-aware algorithms.
+
+ - Whenever an exact sequence of characters is being looked for, move forward
+   based on Boyer-Moore
+
+ - Very-Untrusted-Mode - Perform an initial recognition scan (in sublinear
+   time) before trying to really parse and extract - for when the amortized
+   savings of the recognition scan (maybe even probabilistic at first) are
+   worth it because of the number of expected input 'languages' that are
+   expected to fail.
+
+ - When the discriminants allow for it, in C version, use bitmap-algorithm-like
+   gathering on * terms etc. (or Commentz–Walter algorithm adapted for regular
+   languages as per the PhD thesis in the research folder)
+
+--------------------- PEG
+
+ - Tail recursion on all star expressions means no memory usage for
+   backtracking them.
+
+
+
+
+------
+
+* Show that under PEG-like semantics, all NFA-DFA reductions result in
+* something much smaller than exponential blowup

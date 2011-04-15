@@ -1,0 +1,269 @@
+Ungpeg Parsing Expression Grammars
+==================================
+Joseph Wecker <joseph.wecker@gmail.com>
+:icons:
+:toc:
+:encoding: utf-8
+:lang: en
+
+
+
+== Left Recursion
+
+
+Every left-recursive sequence after inlining makes the following
+transformation:
+
+  a <- a rest1 / a rest2 / s1 / s2 / a rest3
+  a <= (s1 / s2) a2
+  a2<= (rest1 / rest2 / rest3) a / succ
+
+s1 and s2 are assigned all tag that are already assigned to rest1, rest2, and
+rest3 - so that they collapse properly when one of the rest* expressions is
+invoked.
+
+
+== Definitions
+.Expressions
+****
+call:: `some_rule` - A reference to another rule to be invoked.
+seq:: `a b c` - Sequence. A space delimited list of sub-expressions, invoked
+sequentially, that fails if any of the sub-expressions fail.
+ord:: `a/b/c` - Ordered choice. A forward-slash delimited sequence of
+sub-expressions that are evaluated only until one succeeds. A prioritized
+choice sequence.
+xord:: `a//b//c` - Exclusive ordered choice. A specialized +ord+ where the
+first sub-expression to begin to succeed determines the overall result of the
+expression. Intended to be used only internally by the system.
+char:: `[a-z_]` - Character class, matches one/any of the ranges/singles.
+lit:: `'abc'` - Sequence of characters to consume.
+****
+
+.Special Expressions
+****
+succ:: `succ` - (Special) Always succeeds consuming nothing- also known as the empty
+string.
+fail:: `fail` - (Special) Always fails, consuming nothing.
+any:: `. or any` - (Special) Matches and consumes the next available input.
+eof:: `!. or eof` - (Special) Matches the end of all input.
+****
+
+.Misc Expressions
+****
+e:: Shorthand for expression.
+term:: Shorthand for sub-expressions (equivalent to `e` in reality).
+nop:: Shorthand for an expression or sub-expression that can be safely removed.
+body:: The "main" or toplevel `term` for a rule.
+t():: Transformation function that user supplies to process partial results
+c():: Collapse function - internally generated expression that takes everything
+off the current accumulator and assigns it into specified tag buckets.
+****
+
+.Attributes
+****
+Prefixes / Predicates::
+  notp::: `!e1` - Not predicate, fails if e1 succeeds, consumes nothing
+  andp::: `&e1` - And predicate, succeeds if e1 succeeds, consumes nothing
+Suffixes / Quantifiers::
+  star::: `e1*` - Kleene star, greedily consumes zero or more of +e1+, always
+  succeeds
+  plus::: `e1+` - Greedily consumes 1 or more of +e1+, failing if there are
+  none.
+  opt::: `e1?` - Consumes zero or 1 of +e1+, always succeeds.
+****
+
+
+== PEG First Normal Form
+=== Applicable to all (all)
+
+. Every +call+ inlined except entry-points, recursive calls, and accumulators.
+  (NIX)
+. Attributes on all expressions are normalized / reduced (see below) (NIX -
+  redundant)
+. All `+` expressions normalized to `*` expressions.
+. No potential degenerate loops - or warnings emitted if applicable.
+
+=== Ordered Choice (ord)
+
+. Contains no +ord+ terms. (TODO: invalidated by certain +term+ attributes).
+. Contains no +succ+ terms. (Everything after removed and +ord+ rewritten to
+  +ord?+).
+. Contains nothing after a +star+ term (which always succeeds).
+. Contains no +opt+ terms. (Rewritten as +term/succ+ and reduced as per #2).
+. Contains no +fail+ terms. (Safely removed as nops).
+. Contains at least two +terms+. (Single +term+ replaces +nop+ +ord+, with
+  attributes combined).
+. Contains no duplicate or equivalent +terms+. (Leftmost is kept).
+. Contains no +term2+ to the right of +term1+ that have +term1+ as a prefix.
+. All inner +terms+ are in reduced form.
+
+=== Sequences (seq)
+
+. Contains no +seq+ term except where attributes differentiate. (TODO).
+. Contains no +succ+ terms. (Removed because they are nops).
+. Contains no +fail+ terms. (A seq with a fail term is itself a fail term).
+. Contains at least two +terms+. (Single +term+ replaces +nop+ +seq+, with
+  attributes combined).
+. Contains no two identical +star+ terms in a row (safely remove second)
+. All inner +terms+ are in reduced form.
+
+=== Attributes (attr)
+[NOTE]
+One should recursively apply the rule  combinations from innermost to
+outermost, stopping when all are processed or when an error is encountered.
+
+. `opt` Group
+.. `(e1?)?` => `e1?`
+.. `(e1?)*` => [red]#Error#: Degenerate loop at first char where `e1` fails (intended?: e1*)
+.. `(e1*)?` => `e1*`
+.. `(e1?)+` => [red]#Error#: Degenerate loop at first char where `e1` fails (intended?: e1+)
+.. `(e1+)?` => `e1*`
+.. `&(e1?)` => `succ`
+.. `(&e1)?` => `succ`
+.. `!(e1?)` => `fail`
+.. `(!e1)?` => `succ`
+.. `any?`   => Valid, no change
+.. `eof?`   => `succ`
+.. `succ?`  => `succ`
+.. `fail?`  => `succ`
+
+. `star` Group
+.. `(e1*)*` => [red]#Error#: Degenerate loop
+.. `(e1*)+` => `fail` (`e1*` never leaves anything for `+` to consume)
+.. `(e1+)*` => `e1*`
+.. `&(e1*)` => `succ`
+.. `(&e1)*` => [red]#Error#: Degenerate loop
+.. `!(e1*)` => `fail`
+.. `(!e1)*` => [red]#Error#: Degenerate loop when `e1` fails
+.. `any*`   => Valid, no change
+.. `eof*`   => [red]#Error#: Degenerate loop (`(!any)*`)
+.. `succ*`  => [red]#Error#: Degenerate loop
+.. `fail*`  => `fail`
+
+. `plus` Group
+.. `(e1+)+` => `fail` (never anything for the second to consume)
+.. `&(e1+)` => Valid, no change
+.. `(&e1)+` => [red]#Error#: Degenerate loop when `e1` succeeds
+.. `!(e1+)` => Valid, no change
+.. `(!e1)+` => [red]#Error#: Degenerate loop when `e1` fails
+.. `any+`   => Valid, no change
+.. `eof+`   => [red]#Error#: Degenerate loop
+.. `succ+`  => [red]#Error#: Degenerate loop
+.. `fail+`  => `fail`
+
+. `andp` Group
+.. `&(&e1)` => `&e1`
+.. `!(&e1)` => `!e1`
+.. `&(!e1)` => `!e1`
+.. `&any`   => Valid, no change
+.. `&eof`   => Valid, no change
+.. `&succ`  => `succ`
+.. `&fail`  => `fail`
+
+. `notp` Group
+.. `!(!e1)` => `&e1`
+.. `!any`   => `eof`
+.. `!eof`   => `any`
+.. `!succ`  => `fail`
+.. `!fail`  => `succ`
+
+=== Detecting Degenerate Loops
+==== Expression Classification
+.Definitions
+****
+0:: Success, nothing consumed
+1:: Success, something consumed
+f:: Failure, nothing consumed
+s:: 0 or 1 (success, sometimes something consumed)
+a:: s or f (any of the above)
+****
+
+
+. `succ`    -> 0
+. `any/char/lit` -> 1 | f
+. `call`    -> (whatever its expression reduces to)
+. `e1 e2`   -> 0 if `e1`->0 and `e2`->0
+. `e1 e2`   -> 1 if `e1`->1 and `e2`->s (or visa versa)
+. `e1 e2`   -> f if `e1`->f or (`e1`->s and `e2`->f)
+. `e1/e2`   -> s if `e1`->s
+. `e1/e2`   -> a if `e1`->f and `e2`->a
+. `e*`      -> 1 if `e` ->1
+. `e*`      -> 0 if `e` ->f
+. `!e`      -> f if `e` ->s
+. `!e`      -> 0 if `e` ->f
+. `e1/e2*`  -> s
+. `e1/e2?`  -> s
+. `e1/succ` -> s
+
+==== Algorithm
+The primary objective is to detect any concrete possibility of `e1`->0 in
+`e1*`. The secondary objective, if possible, is to detect the possibility of a
+recursive rule recursing without consuming any input (after left-recursion
+rules are put into place).
+
+
+== PEG Second Normal Form
+(In preparation for all transformations)
+
+. No `lit` expressions - only sequences of (small) `char` ranges.
+. Every `char` range with multiple ranges is instead an `ord` of each
+  range/char.
+. `star` expressions pulled into their own tail-recursive rules.
+. Only recursive rules (including what used to be `star` expressions) are not
+  inlined.
+
+== PEG Optimized Form
+(All transformations have finished)
+
+. (If possible) no `ord` expressions- only `xord` expressions in their place.
+. All potentially left-recursive rules are marked for compiler generator.
+. Sequences of `char` recombined into `lit` form where possible. (NOTE: the
+  transformation function may need to break it back up- but it'll still make
+  matching faster...)
+. Predicates reference new (optimized) paths - predicates do not reference
+  any rules referenced by any non-predicate rules.
+. Predicates do not attempt to consume more of the input once success or
+  failure is certain.
+
+== XORD creation
+. `R <- ([x]//[y]) R / succ` can be rewritten as `R <- ([x]//[y]) R // succ` -
+  TODO: figure out how it is discoverable (in this case first term succeeds or
+  fails, and second one always succeeds, so only first one is determinant...)
+
+== AST Attributes
+* notp, andp
+* star, plus, opt
+* token
+* trans: transformation expression
+* tag: name with qualifier
+* orig: original rule name
+* orig_tag: original (unqualified) tag
+* entry: name (designated entry point)
+* i: index within original peg (line and column)
+
+
+
+
+== Algebra
+
+=== ord
+ * Associative
+ * Non-commutative (generally)
+
+=== xord
+ * Associative: `a║(b║c) == (a║b)║c`
+ * Commutative: `a║b║c == a║c║b`
+
+=== seq
+ * Associative
+ * Non-commutative (except sometimes with predicates)
+
+
+
+e1,(e2║e3)
+e1║(e1 e2)
+
+
+a/(b/(c/d))
+
+
