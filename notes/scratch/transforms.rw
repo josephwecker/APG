@@ -1,0 +1,88 @@
+# Rewrite rules for extended
+# TODO: bytestrings & bitstrings
+
+
+#------------------------ Definitions ----------------------------------------|
+#exp   :: ord | xrd | seq | ref | lit | chr | any
+
+#ord   :: [exp]
+#xrd   :: [exp]
+#seq   :: [exp]
+#lit   :: [utf]
+
+#ref   ::
+#chr   :: [ccr]
+#any   :: {utf}
+#utf   :: {x: x is a valid UTF-8 codepoint}
+#range :: (+|-, utf | (utf,utf))
+
+
+#------------------------ Aliases --------------------------------------------|
+SEQ ~ (Ps seq Ss)
+PCH ~ (Pp pch Sp)
+XCH ~ (Px xch Sx)
+LIT ~ (Pl lit Sl)
+CHR ~ (Pc chr Sc)
+REF ~ (Pr ref Sr)
+Ɛ   ~ (Pe ɛ Se)
+Ϝ   ~ (Pf ϝ Sf)
+
+E1 ~ (Pe1 ET1 Se1)
+E2 ~ (Pe2 ET2 Se2)
+
+αchr ~ ([] chr [])
+αlit ~ ([] lit [])
+αϝ   ~ ([] ϝ [])
+αɛ   ~ ([] ɛ [])
+αe1  ~ ([] ET1 [])
+αe2  ~ ([] ET1 [])
+#Ø
+
+#------------------------ Rewrite Rules --------------------------------------|
+
+
+'Inline like-subgroup (Simplification)'
+### seq, ord, and xrd are associative, and inner terms of the same type
+### A·(B·C)·D → A·B·C·D
+(E1 <(αe1 B)>) →                                                     (E1 <B>)
+
+'Inline orphan (Simplification)'
+### An ord/xrd/seq is just the term (with attributes combined)
+### A (B*)? C → A B*? C
+((P1 M1 S1) [((P2 E S2) B)]) →                           ((P1++P2 E S1++S2) B)
+
+### Expansion: Literal removal
+### Transform literal into sequence of character classes (after several
+###   applications)
+### 'abc' →[a] 'bc'
+(Lit [C|R]) →                                        (Seq [(αchr C) (αlit R)])
+
+### Simplification: Empty literal
+### By definition
+### '' →ɛ
+(Lit []) →                                                                   ɛ
+
+### Simplification: Empty character class
+### By definition
+### [] →ɛ
+(Chr C) : C = {} →                                                           ɛ
+
+### Simplification: Merge character classes
+### If one character class is to be tried and then another, try them at the
+###   same time instead.
+### A/B/[0-9]/[x]/C → A/B/[0-9x]/C
+(Ord <(chr C1) (chr C2)>) →                               (ord <(chr C1∪C2)>)
+(Xrd <(chr C1) (chr C2)>) →                               (xrd <(chr C1∪C2)>)
+
+### 
+
+
+#(Seq <((P E
+
+
+
+(seq <!(chr C) (chr Sub)>) : C ⊇ Sub →                                      ϝ
+(seq <!(chr C1) (chr C2)>) →                               (seq <(chr C1∖C2)>)
+(seq <&(chr C1) (chr C2)>) : C1∩C2 = {}→                                    ϝ
+(seq <&(chr C1) (chr C2)>) →                              (seq <(chr C1∩c2)>)
+
