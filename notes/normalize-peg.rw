@@ -1,0 +1,86 @@
+
+# == AST
+#
+#   {type/attrs/body}
+#
+# Sequence:           (seq Expressions)
+# Prioritized Choice: (pch Expressions)
+# Exclusive Choice:   (xch Expressions)
+# Character Class:    (chr Ranges)
+# String Literals:    (str Literal)
+# Any:                any
+# Fail:               ϝ
+# Epsilon/Succeed:    ɛ
+# EOF:                eof
+# Rule invocation:    (ref Rule)
+#
+
+# == Attributes
+#   - PEG unary operations (These are currently all the transformers see)
+#     - opt, star, plus, andp, notp
+#   - Bookkeeping (source position for grammar error emmission etc.)
+#   - Error/Warning operations
+#   - Synthesis operations (? or maybe their own terms)
+#   - Static analysis properties
+#     - consume-range (least and most it will consume)
+#     - fail/succ/either
+#
+
+basic-simplifications
+  | {E/A/<{E/∅/B}>}                     |= {E/A/<B>}              # Unnecessary Grouping
+  | {seq/A/<{ϝ/∅/∅}>}                   |= {ϝ/A/∅}                # Sequence always fails
+  | {seq/A/<{ɛ/∅/∅}>}                   |= {seq/A/<>}             # Unnecessary epsilon
+  | {pch/A/<{ɛ/∅/∅}|_1]}                |= {pch/A⦑opt/<]}         # Unreachable choices
+  | {pch/A/<{ϝ/∅/∅}>}                   |= {pch/A/<>}             # Unnecessary fail
+  | {pch/A/<{E/<opt>/B}|_1]}            |= {pch/A/<{E/<opt>/B}]}  # Everything after ? unreachable
+  | {pch/A/<{E/<star>/B}|_1]}           |= {pch/A/<{E/<star>/B}]} # Everything after * unreachable
+  | {E/A/[{E2/A2/B}]}                   |= {E2/A2++A/B}           # Multis with only 1 expr
+  | {pch/A/<{E/A2/B}..{E/A2/B}>}        |= {pch/A/<{E/A2/B}..>}   # Redundant choice
+  | {seq/A/<{E/[star]/B} {E/[star]/B}>} |= {seq/A/<{E/[star]/B}>} # Redundant star expr
+
+# TODO: term*/+ (term or term+) -> failure
+
+attribute-normalization
+  | {E/<opt opt>/B}   |= {E/<opt>/B}
+  | {_/<opt star>/_}  |= error(degenerate)
+  | {E/<star opt>/B}  |= {E/<star>/B}
+  | {_/<opt plus>/_}  |= error(degenerate)
+  | {E/<plus opt>/B}  |= {E/<star>/B}
+  | {_/<opt andp>/_}  |= {ɛ/<>/∅}
+  | {_/<andp opt>/_}  |= {ɛ/<>/∅}
+  | {_/<opt notp>/_}  |= {ϝ/<>/∅}
+  | {_/<notp opt>/_}  |= {ɛ/<>/∅}
+  | {eof/[opt]/_}     |= {ɛ/∅/∅}
+  | {ɛ/[opt]/_}       |= {ɛ/∅/∅}
+  | {ϝ/[opt]/_}       |= {ɛ/∅/∅}
+
+  | {_/<star star>/_} |= error(degenerate)
+  | {_/<star plus>/_} |= {ϝ/<>/∅}
+  | {E/<plus star>/B} |= {E/<star>/B}
+  | {_/<star andp>/_} |= {ɛ/<>/∅}
+  | {_/<andp star>/_} |= error(degenerate)
+  | {_/<star notp>/_} |= {ϝ/<>/∅}
+  | {_/<notp star>/_} |= error(degenerate)
+  | {eof/[star>/_}    |= error(degenerate)
+  | {ɛ/[star>/_}      |= error(degenerate)
+  | {ϝ/[star>/_}      |= {ɛ/[>/∅}
+
+  | {_/<plus plus>/_} |= {ϝ/<>/∅}
+  | {_/<andp plus>/_} |= error(degenerate)
+  | {_/<notp plus>/_} |= error(degenerate)
+  | {eof/[plus>/_}    |= error(degenerate)
+  | {ɛ/[plus>/_}      |= error(degenerate)
+  | {ϝ/[plus>/_}      |= {ϝ/[>/∅}
+
+  | {E/<andp andp>/B} |= {E/<andp>/B}
+  | {E/<andp notp>/B} |= {E/<notp>/B}
+  | {E/<notp andp>/B} |= {E/<notp>/B}
+  | {ɛ/[andp>/_}      |= {ɛ/[>/∅}
+  | {ϝ/[andp>/_}      |= {ϝ/[>/∅}
+
+  | {E/<notp notp>/B} |= {E/<andp>/B}
+  | {any/[notp>/_}    |= {eof/[>/∅}
+  | {eof/[notp>/_}    |= {any/[>/∅}
+  | {ɛ/[notp>/_}      |= {ϝ/[>/∅}
+  | {ϝ/[notp>/_}      |= {ɛ/[>/∅}
+

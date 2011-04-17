@@ -1,3 +1,7 @@
+GOOD STUFF STILL REMAINING TO REMOVE
+
+
+
 Ungpeg Parsing Expression Grammars
 ==================================
 Joseph Wecker <joseph.wecker@gmail.com>
@@ -76,38 +80,36 @@ Suffixes / Quantifiers::
 == PEG First Normal Form
 === Applicable to all (all)
 
-. Every +call+ inlined except entry-points, recursive calls, and accumulators.
-  (NIX)
-. Attributes on all expressions are normalized / reduced (see below) (NIX -
-  redundant)
-. All `+` expressions normalized to `*` expressions.
-. No potential degenerate loops - or warnings emitted if applicable.
+. (NIX) Every +call+ inlined except entry-points, recursive calls, and accumulators.
+. (NIX - redundant) Attributes on all expressions are normalized / reduced (see below)
+. (?) All `+` expressions normalized to `*` expressions.
+. (DONE) No potential degenerate loops - or warnings emitted if applicable.
 
 === Ordered Choice (ord)
 
-. Contains no +ord+ terms. (TODO: invalidated by certain +term+ attributes).
-. Contains no +succ+ terms. (Everything after removed and +ord+ rewritten to
-  +ord?+).
-. Contains nothing after a +star+ term (which always succeeds).
-. Contains no +opt+ terms. (Rewritten as +term/succ+ and reduced as per #2).
-. Contains no +fail+ terms. (Safely removed as nops).
-. Contains at least two +terms+. (Single +term+ replaces +nop+ +ord+, with
-  attributes combined).
-. Contains no duplicate or equivalent +terms+. (Leftmost is kept).
-. Contains no +term2+ to the right of +term1+ that have +term1+ as a prefix.
-. All inner +terms+ are in reduced form.
+. (DONE) Contains no +ord+ terms. (TODO: invalidated by certain +term+ attributes).
+. (DONE) Contains no +succ+ terms. (Everything after removed and +ord+ rewritten to +ord?+).
+. (DONE) Contains nothing after a +star+ term (which always succeeds).
+. (DONE) Contains no +opt+ terms. (Rewritten as +term/succ+ and reduced as per #2).
+. (DONE) Contains no +fail+ terms. (Safely removed as nops).
+. (DONE) Contains at least two +terms+. (Single +term+ replaces +nop+ +ord+, with attributes combined).
+. (DONE) Contains no duplicate or equivalent +terms+. (Leftmost is kept).
+
+. Contains no +term2+ to the right of +term1+ that have +term1+ as a prefix.  (TOUGH)
+. (DONE) All inner +terms+ are in reduced form.
 
 === Sequences (seq)
 
-. Contains no +seq+ term except where attributes differentiate. (TODO).
-. Contains no +succ+ terms. (Removed because they are nops).
-. Contains no +fail+ terms. (A seq with a fail term is itself a fail term).
-. Contains at least two +terms+. (Single +term+ replaces +nop+ +seq+, with
+. (DONE) Contains no +seq+ term except where attributes differentiate.
+. (DONE) Contains no +succ+ terms. (Removed because they are nops).
+. (DONE) Contains no +fail+ terms. (A seq with a fail term is itself a fail term).
+. (DONE) Contains at least two +terms+. (Single +term+ replaces +nop+ +seq+, with
   attributes combined).
-. Contains no two identical +star+ terms in a row (safely remove second)
-. All inner +terms+ are in reduced form.
+. (DONE) Contains no two identical +star+ terms in a row (safely remove second)
+. (DONE) All inner +terms+ are in reduced form.
 
 === Attributes (attr)
+(DONE)
 [NOTE]
 One should recursively apply the rule  combinations from innermost to
 outermost, stopping when all are processed or when an error is encountered.
