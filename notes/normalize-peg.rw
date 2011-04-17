@@ -24,60 +24,70 @@
 #   - Static analysis properties
 #     - consume-range (least and most it will consume)
 #     - fail/succ/either
+#     - prefix analysis
 #
 
 basic-simplifications
   | {E/A/<{E/∅/B}>}                     |= {E/A/<B>}              # Unnecessary Grouping
+  | {E/A/[{E2/A2/B}]}                   |= {E2/A2++A/B}           # Multis with only 1 expr
+
   | {seq/A/<{ϝ/∅/∅}>}                   |= {ϝ/A/∅}                # Sequence always fails
   | {seq/A/<{ɛ/∅/∅}>}                   |= {seq/A/<>}             # Unnecessary epsilon
+  | {seq/A/<{E/[star]/B} {E/[star]/B}>} |= {seq/A/<{E/[star]/B}>} # Redundant star expr (meh)
+
   | {pch/A/<{ɛ/∅/∅}|_1]}                |= {pch/A⦑opt/<]}         # Unreachable choices
   | {pch/A/<{ϝ/∅/∅}>}                   |= {pch/A/<>}             # Unnecessary fail
   | {pch/A/<{E/<opt>/B}|_1]}            |= {pch/A/<{E/<opt>/B}]}  # Everything after ? unreachable
   | {pch/A/<{E/<star>/B}|_1]}           |= {pch/A/<{E/<star>/B}]} # Everything after * unreachable
-  | {E/A/[{E2/A2/B}]}                   |= {E2/A2++A/B}           # Multis with only 1 expr
   | {pch/A/<{E/A2/B}..{E/A2/B}>}        |= {pch/A/<{E/A2/B}..>}   # Redundant choice
-  | {seq/A/<{E/[star]/B} {E/[star]/B}>} |= {seq/A/<{E/[star]/B}>} # Redundant star expr
 
 # TODO: term*/+ (term or term+) -> failure
 
-attribute-normalization
+attribute-reduction
   | {E/<opt opt>/B}   |= {E/<opt>/B}
   | {_/<opt star>/_}  |= error(degenerate)
-  | {E/<star opt>/B}  |= {E/<star>/B}
   | {_/<opt plus>/_}  |= error(degenerate)
-  | {E/<plus opt>/B}  |= {E/<star>/B}
   | {_/<opt andp>/_}  |= {ɛ/<>/∅}
-  | {_/<andp opt>/_}  |= {ɛ/<>/∅}
   | {_/<opt notp>/_}  |= {ϝ/<>/∅}
-  | {_/<notp opt>/_}  |= {ɛ/<>/∅}
-  | {eof/[opt]/_}     |= {ɛ/∅/∅}
-  | {ɛ/[opt]/_}       |= {ɛ/∅/∅}
-  | {ϝ/[opt]/_}       |= {ɛ/∅/∅}
+  # any?              |= no change
+  | {eof/[opt>/_}     |= {ɛ/[>/∅}
+  | {ɛ/[opt>/_}       |= {ɛ/[>/∅}
+  | {ϝ/[opt>/_}       |= {ɛ/[>/∅}
 
+  | {E/<star opt>/B}  |= {E/<star>/B}
   | {_/<star star>/_} |= error(degenerate)
   | {_/<star plus>/_} |= {ϝ/<>/∅}
-  | {E/<plus star>/B} |= {E/<star>/B}
-  | {_/<star andp>/_} |= {ɛ/<>/∅}
-  | {_/<andp star>/_} |= error(degenerate)
+  | {_/<star andp>/_} |= {ɛ/<>/∅} # Assumes no synthesis from predicates
   | {_/<star notp>/_} |= {ϝ/<>/∅}
-  | {_/<notp star>/_} |= error(degenerate)
+  # any*              |= no change
   | {eof/[star>/_}    |= error(degenerate)
   | {ɛ/[star>/_}      |= error(degenerate)
   | {ϝ/[star>/_}      |= {ɛ/[>/∅}
 
+  | {E/<plus opt>/B}  |= {E/<star>/B}
+  | {E/<plus star>/B} |= {E/<star>/B}
   | {_/<plus plus>/_} |= {ϝ/<>/∅}
-  | {_/<andp plus>/_} |= error(degenerate)
-  | {_/<notp plus>/_} |= error(degenerate)
+  # plus andp         |= no change
+  # plus notp         |= no change
+  # any+              |= no change
   | {eof/[plus>/_}    |= error(degenerate)
   | {ɛ/[plus>/_}      |= error(degenerate)
   | {ϝ/[plus>/_}      |= {ϝ/[>/∅}
 
+  | {_/<andp opt>/_}  |= {ɛ/<>/∅}
+  | {_/<andp star>/_} |= error(degenerate)
+  | {_/<andp plus>/_} |= error(degenerate)
   | {E/<andp andp>/B} |= {E/<andp>/B}
   | {E/<andp notp>/B} |= {E/<notp>/B}
-  | {E/<notp andp>/B} |= {E/<notp>/B}
+  # &any              |= no change
+  # &eof              |= no change
   | {ɛ/[andp>/_}      |= {ɛ/[>/∅}
   | {ϝ/[andp>/_}      |= {ϝ/[>/∅}
 
+  | {_/<notp opt>/_}  |= {ɛ/<>/∅}
+  | {_/<notp star>/_} |= error(degenerate)
+  | {_/<notp plus>/_} |= error(degenerate)
+  | {E/<notp andp>/B} |= {E/<notp>/B}
   | {E/<notp notp>/B} |= {E/<andp>/B}
   | {any/[notp>/_}    |= {eof/[>/∅}
   | {eof/[notp>/_}    |= {any/[>/∅}
