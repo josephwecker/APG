@@ -3,3 +3,7 @@ Superset of PEGs allowing for transformations such that the parser does not
 need memoization, and, we hope to show, can operate in constant space and
 linear time with actual performance very competitive with LALR generated
 parsers and even Regular Expression engines.
+
+Requires::
+  * Construct (https://github.com/josephwecker/construct)
+  * For bootstrapping, waxeye: http://waxeye.org
