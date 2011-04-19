@@ -1,0 +1,21 @@
+
+peg_grammar   <- ?S *rule ?EOF
+rule          <- ?S nonterm ?S DEFINE ?S expr ?S ?RULE_DELIM
+
+nonterm       <- +[a-zA-Z0-9-_]
+expr          <- +(nonterm ?S !DEFINE)
+
+# Misc terminals
+DEFINE        <- "<-" ?S
+RULE_DELIM    <- ";" ?S
+
+# Whitespace
+EOF           <: !.
+S             <: +(SPACE | NL)
+NL            <: ?COMMENT NEWLINE
+NEWLINE       <: "\n" | "\r\n" | "\r"
+SPACE         <: [ \t] | ML_COMMENT
+COMMENT       <: "#" *(!NEWLINE .) &NEWLINE
+ML_INNER      <: ML_COMMENT | +(!"#|" !"|#" .)
+ML_COMMENT    <: "#|" *ML_INNER "|#"
+
