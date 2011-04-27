@@ -94,3 +94,11 @@ attribute-reduction
   | {ɛ/[notp>/_}      |= {ϝ/[>/∅}
   | {ϝ/[notp>/_}      |= {ɛ/[>/∅}
 
+basic-desugaring
+  | {E/A/<{E/∅/B}>}                     |= {E/A/<B>}              # Unnecessary Grouping (again)
+  | {E/A/[{E2/A2/B}]}                   |= {E2/A2++A/B}           # Multis with only 1 expr (again)
+
+  | {lit/A/[Rem]}                       |= {chr/A/[Rem]}                        # Desugar 'a'  -> [a]
+  | {lit/A/[First|R]}                   |= {seq/A/[{chr/∅/[First]} {lit/∅/R}]}  # Desugar 'ab' -> [a] 'b'
+  | {E/<opt>/B}                         |= {pch/<>/[B {ɛ/∅/∅}]}                 # Desugar e?   -> e/ɛ
+  | {E/<plus>/B}                        |= {seq/<>/[{E/∅/B} {E/[star]/B}]}      # Desugar e+   -> e e*
