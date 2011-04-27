@@ -1,0 +1,32 @@
+
+
+{seq/A/Children}
+{pch/A/Children}
+{xch/A/Children}
+
+{chr/A/Ranges}
+{str/A/Literal}
+{any/A/∅}
+{ϝ/A/∅}
+{ɛ/A/∅}
+{eof/A/∅}
+
+{def/A2/BodyExpr}
+{ref/A/RuleName}
+
+-------------
+
+# PEG related attributes
+#  opt, star, plus, andp, notp
+
+# Accumulator related attributes
+#  {acc/Action}
+
+# Bookkeeping related attributes
+#  {pos/OriginalPos},
+#  {
+
+
+# LIMITED DESUGARING
+# lit -> chr
+# opt -> pch

@@ -1,0 +1,8 @@
+
+1. Eliminate any character specific predicates
+2. Try to pull all remaining predicates into prioritized choices (??? -
+   actually just needs to know the current fail/succ context for prefix
+   analysis)
+3. Do prefix analysis
+
+
