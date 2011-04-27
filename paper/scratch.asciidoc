@@ -1,0 +1,92 @@
+
+
+Backtracking can be eliminated by:
+ 1. Left-factoring prioritized choices until every choice has a unique set of
+   accepted characters.
+ 2. Transforming all predicate expressions by one of:
+   - Merging with a character class
+   - Rewriting as a prioritized choice, determining common prefixes, and then:
+     - Rewrite as a static epsilon
+     - Rewrite as a static fail
+     - Remove while reordering choices in a prioritized choice
+   - (??) Reducing to a specialized automaton so capture is preserved... Static
+     parallel.... (for difficult recurse situations / context-sensitive
+     examples)
+ 3. Reducing special attribute combinations into:
+   - Degenerate error
+   - Static fail
+   - Static epsilon
+
+
+==================
+
+
+== 1. Left Factoring Prioritized Choices
+
+Analogous to NFA->DFA transformation, made tractable by the following fact that
+prioritized choices and greedy operations eliminate ambiguity and epsilon issues.
+
+a <- 'aabc' / 'abc' / 'bd'
+a <- ('a' ('abc' / 'bc')) / 'bd'
+
+At this point the choices are also commutable. (Show that it solves some open
+questions from the original paper).
+
+.Theorem
+  All prioritized choices can be turned into nested exclusive choices
+
+
+== 2. Predicate Expression Manipulation
+
+=== Merging with Character Classes
+
+Merge with prefix analysis?
+.Theorem
+  Any predicate character class followed in a sequence by a character class can
+  be left-factored and merged together.
+
+a <- !["] .
+a <- [all but "]
+
+=== Elimination by rewriting and prefix analysis
+
+
+
+
+
+
+
+
+
+
+
+
+===============
+
+
+Parser-combinator
+
+
+f(P) = {succ,fail}
+f(P) decomposable into other f(P)s
+
+Cyclical Decomposable Binary Tree
+
+Always two leaves
+Always one root
+Any number of intermediate nodes that have the same properties
+
+
+
+
+Parent allways tells children it's fail/succ context - so the children't
+ultimate fail/succ context is the parent's local fail/succ context. If there is
+no parent (root rule) then the ultimate fail/succ context is overall fail/succ.
+
+So, starting with the root rule (null parent):
+ * Construct an automaton type tree out of main expressions
+ * Discover next-accepted-range for each inner node
+ * Find all common prefixes
+ * ...
+
+
