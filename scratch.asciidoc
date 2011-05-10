@@ -1,0 +1,66 @@
+
+
+Needed
+-----------------
+ - Exact syntax
+   * Standard PEG
+   * APG extensions such as exclusive ordered choices
+   * Automatic AST syntax elements
+   * APG directives
+
+.Syntax: Normal Elements
+|==========================================
+| r1<-e1 | rule-association
+| e1 e2  | sequence
+| e1/e2  | prioritized-choice
+| &e1    | and-predicate
+| !e1    | not-predicate
+| e1*    | 0-or-more
+| e1+    | 1-or-more
+| e1?    | optional
+| 'abc'  | literal (single node in AST)
+| [a-z]  | character-class
+| .      | wildcard
+| (e1)   | precedence-groups
+|==========================================
+
+.Syntax: Extensions
+|==========================================
+| e1||e2      | exclusive-prioritized-choice
+| "abc"       | case-insensitive-literal
+| \epsilon    | match-empty-string (succeed)
+| \fail       | always-fails
+| \eof        | end-of-file
+| _e1         | optional-ast-ignored-expression
+| :e1         | ast-ignored-expression
+| r1<:e1      | ast-ignored-rule
+| r1<=e1      | ast-pruned-rule
+| [a][0-9]'a' | class-literal (no space, single value in AST node)
+| n1:e1       | ast-node-rename
+| # ...       | inline-comment
+| '#| ... |#' | multiline-comment (sans quotes)
+|==========================================
+
+
+
+
+Specialized State Tables
+-------------------------
+
+.a <- [a] [b] [c]
+|==================================================
+| s1 | 'a' | j(s2)
+|    |  _  | fail()
+| s2 | 'b' | j(s3)
+|    |  _  | fail()
+| s3 | 'c' | succeed()
+|==================================================
+
+.a <- [a]* [b]
+|==================================================
+| s1 | 'a' | 
+|    | 'b' | t1->
+
+
+:rule <- ...   # No collecting
+rule <- :a b c # Collect only b and c
