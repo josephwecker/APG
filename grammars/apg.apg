@@ -1,0 +1,65 @@
+#|------------------------------------------------------------------------------
+
+.Syntax: Normal Elements
+|=================================================================
+| r1<-e1      | rule-association
+| e1 e2       | sequence
+| e1/e2       | prioritized-choice
+| &e1         | and-predicate
+| !e1         | not-predicate
+| e1*         | 0-or-more
+| e1+         | 1-or-more
+| e1?         | optional
+| 'abc'       | literal (single node in AST)
+| [a-z]       | character-class
+| .           | wildcard
+| (e1)        | precedence-groups
+|=================================================================
+
+.Syntax: Extensions
+|=================================================================
+| e1-abcɛ     | extended-char-support-for-symbols
+| [\x{3f2}]   | unicode-char-escapes (more ...)
+| <f/2|g:8/4> | binary-matching
+| ~[a-z]      | inverse-character-range
+| e1||e2      | exclusive-prioritized-choice
+| "abc"       | case-insensitive-literal
+|             |
+| \epsilon    | match-empty-string (succeed)
+| \fail       | always-fails
+| \eof        | end-of-file
+|             |
+| _e1         | optional-ast-ignored-expression
+| :e1         | ast-ignored-expression
+| r1<:e1      | ast-ignored-rule
+| r1<=e1      | ast-pruned-rule
+| [a][0-9]'a' | class-literal (no space, single value in AST node)
+| n1:e1       | ast-node-rename
+| n1:e1 n1:e2 | auto-combine-node
+|             |
+| # ...       | inline-comment
+| '#| ... |#' | multiline-comment (sans quotes) (nested)
+|=================================================================
+
+.Notes:
+ - Pruning to happen after all the parsing is done (to keep things simple)
+
+------------------------------------------------------------------------------|#
+
+apg            <- _s rule+ \eof
+rule           <- symbol _s rule-type _s expression _s
+rule-type      <- normal / ignored / pruning
+normal         <- 
+
+expression     <= pch / xch / seq / primary
+primary        <= attributes:prefix* atomic attributes:suffix*
+
+prefix         <- notp:[!] / andp:[&] / optign:[_] / ign:[:] / new-name
+suffix         <- star:[*] / plus:[+] / opt:[?]
+new-name       <- symbol :[:]
+
+atomic         <= specials / ref / group / lit-group / lit / chr
+
+
+
+
